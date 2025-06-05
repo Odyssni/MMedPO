@@ -88,6 +88,13 @@ deepspeed --include localhost:0,1,2,3 ./train/dpo/train_dpo_visual-text.py \
     --lazy_preprocess True \
 ```
 
+## 🚀 Inference
+The inference script is at `scripts` folder. You can run after specifying relevant paths:
+
+```
+bash scripts/inference_llava-med_{vqa/report}.sh
+```
+
 ## 📚 Citation
 
 ```bibtex
