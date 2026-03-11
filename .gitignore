@@ -1,17 +1,19 @@
 
-# extra
-backup
-curation/Sample_Zero-Shot_Grounding_RSNA/model_weights
-curation/Sample_Zero-Shot_Grounding_RSNA/model_weights/checkpoint_final.pth
-*.pth
+# # extra
+# backup
+# curation/Sample_Zero-Shot_Grounding_RSNA/model_weights
+# curation/Sample_Zero-Shot_Grounding_RSNA/model_weights/checkpoint_final.pth
+# *.pth
 
 
-train/dpo/docs
-train/dpo/playground
-train/dpo/wandb
+# train/dpo/docs
+# train/dpo/playground
+# train/dpo/wandb
 __pycache__/
 *.pyc
 __MACOSX/
+
+checkpoint_medklip.pth
 
 dataset/
 SLAKE/
