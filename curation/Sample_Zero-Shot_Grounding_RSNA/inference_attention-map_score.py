@@ -256,10 +256,11 @@ def main(args, config):
     print("Creating dataset")
     # test_dataset =  RSNA2018_Dataset(config['test_file'])
     test_dataset = DPODateset(config["test_file"], args)
+    num_workers = min(4, os.cpu_count() or 1)
     test_dataloader = DataLoader(
         test_dataset,
         batch_size=config["test_batch_size"],
-        num_workers=32,
+        num_workers=num_workers,
         pin_memory=True,
         sampler=None,
         shuffle=False,
@@ -346,7 +347,11 @@ def main(args, config):
         args.annotation_save_root,
         args.dataset_name + f"_visual_dpo-{args.dataset_type}.json",
     )
-    # ans_file = open(json_path, "w")
+    noised_image_dataset_dir = os.path.join(
+        args.noised_image_save_root, args.dataset_name
+    )
+    os.makedirs(args.annotation_save_root, exist_ok=True)
+    os.makedirs(noised_image_dataset_dir, exist_ok=True)
     ans_items = []
     for i, sample in enumerate(tqdm(test_dataloader, position=0, file=sys.stdout)):
         ids = sample["id"]
@@ -381,15 +386,17 @@ def main(args, config):
             # print(ids)
             ids = [str(i.item()) for i in ids]
             noised_image_paths = [
-                os.path.join(
-                    args.noised_image_save_root, args.dataset_name, ids[i] + ".png"
-                )
+                os.path.join(noised_image_dataset_dir, ids[i] + ".png")
                 for i in range(batch_size)
             ]
             rejected_images = generate_noised_image(image_paths, pred_maps_cpu)
 
             for i in range(batch_size):
-                cv2.imwrite(noised_image_paths[i], rejected_images[i])
+                saved = cv2.imwrite(noised_image_paths[i], rejected_images[i])
+                if not saved:
+                    raise RuntimeError(
+                        f"Failed to write image to {noised_image_paths[i]}"
+                    )
             weighted_scores = generate_weighted_score(scores, label_index)
             for (
                 idx,
@@ -424,12 +431,10 @@ def main(args, config):
                         {"from": "gpt", "value": correct_answer},
                     ],
                 }
-                # ans_file.write(json.dumps(dpo_item)+'\n')
-                # ans_file.flush()
                 ans_items.append(dpo_item)
-    # ans_file.close()
-    # with open(json_path, "w") as ans_file:
-    #     json.dump(ans_items, ans_file, indent=4)
+    with open(json_path, "w") as ans_file:
+        json.dump(ans_items, ans_file, indent=4)
+    print(f"Saved {len(ans_items)} records to {json_path}")
     # get the map
 
 
